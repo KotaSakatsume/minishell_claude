@@ -20,7 +20,7 @@ int	process_line(t_shell *shell, char *line)
 {
 	char	**argv;
 
-	argv = tokenize(line);
+	argv = tokenize(shell, line);
 	if (!argv || !argv[0])
 	{
 		free_argv(argv);

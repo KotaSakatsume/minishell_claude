@@ -21,6 +21,25 @@ typedef struct s_shell
 	int		last_status;
 }	t_shell;
 
+/* t_buf: 自前可変長文字列(realloc 非許可のため倍化 malloc で grow) */
+typedef struct s_buf
+{
+	char	*data;
+	size_t	len;
+	size_t	cap;
+}	t_buf;
+
+/* t_lex: レキサ状態(argv 構築 + quote 状態 + 語 active フラグ) */
+typedef struct s_lex
+{
+	char	**argv;
+	int		argc;
+	t_buf	buf;
+	int		quote;
+	int		active;
+	int		had_quote;
+}	t_lex;
+
 /* main.c */
 int		shell_init(t_shell *shell, char **envp);
 void	shell_cleanup(t_shell *shell);
@@ -32,8 +51,27 @@ int		repl_loop(t_shell *shell);
 int		process_line(t_shell *shell, char *line);
 
 /* tokenize.c */
-char	**tokenize(const char *line);
 void	free_argv(char **argv);
+
+/* lexer.c */
+char	**tokenize(t_shell *shell, const char *line);
+int		lex_run(t_shell *shell, t_lex *lx, const char *line);
+int		finish_word(t_lex *lx);
+int		argv_push(t_lex *lx, char *word);
+
+/* lexer_state.c */
+int		handle_char(t_shell *shell, t_lex *lx, const char *s, int i);
+
+/* expand.c */
+int		expand_var(t_shell *shell, t_lex *lx, const char *s, int i);
+int		var_name_len(const char *s);
+int		append_status(t_buf *b, int n);
+
+/* strbuf.c */
+int		sb_init(t_buf *b);
+int		sb_push(t_buf *b, char c);
+int		sb_push_str(t_buf *b, const char *s);
+char	*sb_release(t_buf *b);
 
 /* builtins.c */
 int		is_builtin(const char *cmd);
