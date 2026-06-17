@@ -48,7 +48,7 @@ int	run_external(t_shell *shell, char **argv)
 	pid_t	pid;
 	int		status;
 
-	path = find_command_path(shell->envp, argv[0]);
+	path = find_command_path(shell->env, argv[0]);
 	if (!path)
 	{
 		cmd_error(argv[0], "command not found");
@@ -64,7 +64,7 @@ int	run_external(t_shell *shell, char **argv)
 		return (1);
 	}
 	if (pid == 0)
-		child_exec(path, argv, shell->envp);
+		child_exec(path, argv, shell->env);
 	waitpid(pid, &status, 0);
 	free(path);
 	shell->last_status = wait_status(status);

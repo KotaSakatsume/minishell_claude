@@ -11,12 +11,13 @@
 /*
 ** t_shell: シェル全体の状態。main で1つ確保し全関数へポインタ渡しする。
 ** グローバル変数は導入しない(将来のシグナル用に枠を温存)。
-**   envp        : 環境変数(env / PATH 参照 / execve の第3引数)
+**   env         : 起動時 envp を複製して所有する可変コピー
+**                 (env / PATH 参照 / execve / cd・export・unset が読み書き)
 **   last_status : 直近コマンドの終了ステータス($? 用)
 */
 typedef struct s_shell
 {
-	char	**envp;
+	char	**env;
 	int		last_status;
 }	t_shell;
 
@@ -41,10 +42,29 @@ int		run_builtin(t_shell *shell, char **argv);
 /* builtin_exit.c */
 int		bi_exit(t_shell *shell, char **argv);
 
+/* builtin_cd.c */
+int		bi_cd(t_shell *shell, char **argv);
+
+/* builtin_export.c */
+int		bi_export(t_shell *shell, char **argv);
+
+/* builtin_unset.c */
+int		bi_unset(t_shell *shell, char **argv);
+
 /* execute.c */
 int		run_external(t_shell *shell, char **argv);
 
 /* path_utils.c */
-char	*find_command_path(char **envp, const char *cmd);
+char	*find_command_path(char **env, const char *cmd);
+
+/* env_utils.c */
+int		env_count(char **env);
+char	**env_dup(char **src);
+char	*env_get(char **env, const char *key);
+void	env_free(char **env);
+char	**env_unset(char **env, const char *key);
+
+/* env_set.c */
+char	**env_set(char **env, const char *key, const char *val);
 
 #endif
