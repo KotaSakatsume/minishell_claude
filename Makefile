@@ -19,7 +19,8 @@ SRCS        = src/main.c src/repl.c src/process_line.c \
               src/tokenize.c src/builtins.c src/builtin_exit.c \
               src/execute.c src/path_utils.c \
               src/env_utils.c src/env_set.c \
-              src/builtin_cd.c src/builtin_export.c src/builtin_unset.c
+              src/builtin_cd.c src/builtin_export.c src/builtin_unset.c \
+              src/strbuf.c src/expand.c src/lexer_state.c src/lexer.c
 OBJS        = $(SRCS:.c=.o)
 
 all: $(NAME)
