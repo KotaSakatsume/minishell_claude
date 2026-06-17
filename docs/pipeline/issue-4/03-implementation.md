@@ -66,4 +66,4 @@
 
 ## ブランチ / コミット
 - ブランチ: `feat/issue-4-execution`
-- コミットハッシュ: (コミット後に追記)
+- コミットハッシュ: `4767b2c` — "feat: command execution — tokenize + PATH exec + core builtins"
