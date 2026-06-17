@@ -2,14 +2,17 @@
 
 int	shell_init(t_shell *shell, char **envp)
 {
-	shell->envp = envp;
+	shell->env = env_dup(envp);
+	if (!shell->env)
+		return (1);
 	shell->last_status = 0;
 	return (0);
 }
 
 void	shell_cleanup(t_shell *shell)
 {
-	shell->envp = NULL;
+	env_free(shell->env);
+	shell->env = NULL;
 	shell->last_status = 0;
 	rl_clear_history();
 }

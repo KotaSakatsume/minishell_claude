@@ -4,7 +4,9 @@
 int	is_builtin(const char *cmd)
 {
 	if (!ft_strncmp(cmd, "pwd", 4) || !ft_strncmp(cmd, "echo", 5)
-		|| !ft_strncmp(cmd, "env", 4) || !ft_strncmp(cmd, "exit", 5))
+		|| !ft_strncmp(cmd, "env", 4) || !ft_strncmp(cmd, "exit", 5)
+		|| !ft_strncmp(cmd, "cd", 3) || !ft_strncmp(cmd, "export", 7)
+		|| !ft_strncmp(cmd, "unset", 6))
 		return (1);
 	return (0);
 }
@@ -55,9 +57,9 @@ static int	bi_env(t_shell *shell)
 	int	i;
 
 	i = 0;
-	while (shell->envp[i])
+	while (shell->env[i])
 	{
-		write(STDOUT_FILENO, shell->envp[i], ft_strlen(shell->envp[i]));
+		write(STDOUT_FILENO, shell->env[i], ft_strlen(shell->env[i]));
 		write(STDOUT_FILENO, "\n", 1);
 		i++;
 	}
@@ -73,5 +75,11 @@ int	run_builtin(t_shell *shell, char **argv)
 		return (bi_echo(shell, argv));
 	if (!ft_strncmp(argv[0], "env", 4))
 		return (bi_env(shell));
+	if (!ft_strncmp(argv[0], "cd", 3))
+		return (bi_cd(shell, argv));
+	if (!ft_strncmp(argv[0], "export", 7))
+		return (bi_export(shell, argv));
+	if (!ft_strncmp(argv[0], "unset", 6))
+		return (bi_unset(shell, argv));
 	return (bi_exit(shell, argv));
 }
