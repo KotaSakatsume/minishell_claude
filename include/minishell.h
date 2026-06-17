@@ -37,6 +37,7 @@ typedef struct s_lex
 	t_buf	buf;
 	int		quote;
 	int		active;
+	int		had_quote;
 }	t_lex;
 
 /* main.c */

@@ -59,6 +59,12 @@
 5. **展開のメモリ順序** — env_get の借用ポインタは sb_push_str でコピーしてから name を free(use-after-free なし)。
 6. **フィールド分割なし**(`X="a b"; echo $X` は1引数のまま)は本Issueのスコープ外(設計どおり)。
 
+## 段階4 差し戻し対応(round-trip 1)
+- **must-1(Reviewer 検出):** unquoted の空展開(`$NOPE` 単独)が空引数を生成し `: Permission denied` を出していた(bash は no-op)。
+- **修正:** `t_lex.had_quote` を追加。クォート開始で `had_quote=1`、`finish_word` で **`!had_quote && 空語` は捨てる**(クォート付き空 `""`/`"$NOPE"` は保持)。
+- 再検証: `$NOPE`→no-op、`echo $NOPE`→argv `{echo}`、`echo "$NOPE"`→空引数保持、全回帰 + leaks 0 + Norm OK。
+
 ## ブランチ / コミット
 - ブランチ: `feat/issue-8-quotes`
-- コミットハッシュ: (コミット後に追記)
+- 初回コミット: `e617922` — "feat: quote handling and variable expansion ($VAR / $?)"
+- 差し戻し修正: 下記 fix コミット(had_quote による空語除去)

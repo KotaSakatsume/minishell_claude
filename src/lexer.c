@@ -38,9 +38,12 @@ int	finish_word(t_lex *lx)
 	word = sb_release(&lx->buf);
 	if (!word)
 		return (-1);
-	if (argv_push(lx, word))
+	if (!lx->had_quote && word[0] == '\0')
+		free(word);
+	else if (argv_push(lx, word))
 		return (-1);
 	lx->active = 0;
+	lx->had_quote = 0;
 	if (sb_init(&lx->buf))
 		return (-1);
 	return (0);
@@ -81,6 +84,7 @@ char	**tokenize(t_shell *shell, const char *line)
 	lx.argc = 0;
 	lx.quote = 0;
 	lx.active = 0;
+	lx.had_quote = 0;
 	if (sb_init(&lx.buf))
 	{
 		free(lx.argv);

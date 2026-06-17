@@ -38,10 +38,11 @@ static int	handle_none(t_shell *shell, t_lex *lx, const char *s, int i)
 		return (i + 1);
 	}
 	lx->active = 1;
-	if (s[i] == '\'')
-		lx->quote = 1;
-	else if (s[i] == '"')
-		lx->quote = 2;
+	if (s[i] == '\'' || s[i] == '"')
+	{
+		lx->had_quote = 1;
+		lx->quote = 1 + (s[i] == '"');
+	}
 	else if (s[i] == '$')
 		return (expand_var(shell, lx, s, i));
 	else if (sb_push(&lx->buf, s[i]))
