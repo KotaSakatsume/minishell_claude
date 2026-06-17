@@ -1,0 +1,60 @@
+name: 開発パイプライン (5体エージェント)
+description: Architect→Investigator→Implementer→Reviewer→Integrator の直列パイプラインで処理するタスク
+title: "[pipeline] "
+labels: ["pipeline:queued"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        このIssueは5体エージェントの直列パイプラインで処理されます。
+        各段階の成果物はこのIssueのコメントに追記され、最終的にPRが作成されます。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 課題 / 要件
+      description: 解決したいこと。何が問題で、何を実現したいか。
+      placeholder: |
+        例: 決済リトライ処理が重複課金を起こすことがある。
+        リトライ時に冪等性を担保し、重複課金を防ぎたい。
+    validations:
+      required: true
+
+  - type: textarea
+    id: codebase
+    attributes:
+      label: 既存コードベースの該当箇所
+      description: 関係しそうなファイル・モジュール・サービス
+      placeholder: |
+        例: PaymentService (payment_service.go), OrderRepository (order_repo.go)
+    validations:
+      required: false
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: 制約
+      description: 守るべき条件(後方互換・言語バージョン・性能目標・DBスキーマ制約など)
+      placeholder: |
+        例: 既存APIの後方互換を維持 / Go 1.22 / DBスキーマ変更は最小限
+    validations:
+      required: false
+
+  - type: textarea
+    id: nonfunctional
+    attributes:
+      label: 非機能要件 (任意)
+      description: パフォーマンス / セキュリティ / 可用性の目標があれば
+    validations:
+      required: false
+
+  - type: dropdown
+    id: size
+    attributes:
+      label: 想定規模
+      description: パイプラインを回すべきサイズか(小さすぎる場合は通常作業の方が速い)
+      options:
+        - 中〜大 (設計判断が必要 / 影響範囲が広い)
+        - 小 (typo・1行fix・設定変更 → パイプライン非推奨)
+    validations:
+      required: true
