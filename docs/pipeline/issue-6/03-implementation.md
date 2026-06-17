@@ -62,4 +62,4 @@
 
 ## ブランチ / コミット
 - ブランチ: `feat/issue-6-builtins`
-- コミットハッシュ: (コミット後に追記)
+- コミットハッシュ: `ad45acb` — "feat: cd / export / unset with owned mutable env"
