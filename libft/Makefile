@@ -4,7 +4,7 @@ CC      = cc
 CFLAGS  = -Wall -Wextra -Werror
 AR      = ar rcs
 
-SRCS    = ft_strlen.c
+SRCS    = ft_strlen.c ft_strdup.c ft_strndup.c ft_strncmp.c ft_strchr.c
 OBJS    = $(SRCS:.c=.o)
 
 all: $(NAME)

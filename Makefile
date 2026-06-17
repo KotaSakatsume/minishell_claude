@@ -15,7 +15,9 @@ LDLIBS      = -lreadline
 LIBFT_DIR   = libft
 LIBFT       = $(LIBFT_DIR)/libft.a
 
-SRCS        = src/main.c src/repl.c src/process_line.c
+SRCS        = src/main.c src/repl.c src/process_line.c \
+              src/tokenize.c src/builtins.c src/builtin_exit.c \
+              src/execute.c src/path_utils.c
 OBJS        = $(SRCS:.c=.o)
 
 all: $(NAME)

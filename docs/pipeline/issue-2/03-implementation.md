@@ -85,4 +85,4 @@ Process NNNNN: 0 leaks for 0 total leaked bytes.
 
 ## ブランチ / コミット
 - ブランチ: `feat/issue-2-foundation`
-- コミットハッシュ: (コミット後に追記)
+- コミットハッシュ: `d86a9e0` — "feat: project foundation (Makefile + readline REPL skeleton)"

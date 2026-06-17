@@ -1,15 +1,32 @@
 #include "minishell.h"
 
 /*
-** 将来のレキサ/パーサ/実行の接続点(拡張ポイント)。
-** 後段Issueはこの関数の中身を tokenize -> parse -> execute に差し替えるだけで済む。
-** line の所有権は呼び出し側(repl_loop)が持ち、本関数は読むだけ。
-** スケルトンの現状は入力行をそのままエコーするに留める(libft の ft_strlen を経由)。
+** builtin / external の分岐。builtin は親プロセスで実行する
+** (exit が親を終了させ、将来の cd を親に効かせるため fork しない)。
+*/
+static int	dispatch(t_shell *shell, char **argv)
+{
+	if (is_builtin(argv[0]))
+		return (run_builtin(shell, argv));
+	return (run_external(shell, argv));
+}
+
+/*
+** 将来のレキサ/パーサ/実行の接続点。
+** 現状は「空白split -> dispatch -> argv 解放」。クォート/展開/リダイレクト/
+** パイプは別Issue。argv の所有権は本関数が持ち、末尾で必ず解放する。
 */
 int	process_line(t_shell *shell, char *line)
 {
-	(void)shell;
-	write(STDOUT_FILENO, line, ft_strlen(line));
-	write(STDOUT_FILENO, "\n", 1);
+	char	**argv;
+
+	argv = tokenize(line);
+	if (!argv || !argv[0])
+	{
+		free_argv(argv);
+		return (0);
+	}
+	dispatch(shell, argv);
+	free_argv(argv);
 	return (0);
 }
