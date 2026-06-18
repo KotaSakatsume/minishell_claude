@@ -28,7 +28,13 @@ int	repl_loop(t_shell *shell)
 
 	while (1)
 	{
+		set_signals_interactive();
 		line = readline("minishell$ ");
+		if (g_signal == SIGINT)
+		{
+			shell->last_status = 130;
+			g_signal = 0;
+		}
 		if (line == NULL)
 		{
 			write(STDOUT_FILENO, "exit\n", 5);

@@ -34,6 +34,7 @@ void	pipe_child(t_shell *shell, t_cmd *cmd, int in_fd, int *pfd)
 {
 	char	*path;
 
+	reset_signals_child();
 	pipe_dup(in_fd, pfd);
 	if (run_heredocs(shell, cmd) || apply_redirs(cmd->redirs))
 		exit(1);
