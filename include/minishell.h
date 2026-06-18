@@ -29,11 +29,45 @@ typedef struct s_buf
 	size_t	cap;
 }	t_buf;
 
-/* t_lex: レキサ状態(argv 構築 + quote 状態 + 語 active フラグ) */
+/* トークン型(WORD = 語、他はリダイレクト演算子) */
+typedef enum e_tok_type
+{
+	TOK_WORD,
+	TOK_IN,
+	TOK_OUT,
+	TOK_APPEND,
+	TOK_HEREDOC
+}	t_tok_type;
+
+/* t_tok: レキサ出力の型付きトークン連結リスト */
+typedef struct s_tok
+{
+	t_tok_type		type;
+	char			*str;
+	struct s_tok	*next;
+}	t_tok;
+
+/* t_redir: パーサ出力の出現順リダイレクトリスト */
+typedef struct s_redir
+{
+	t_tok_type		type;
+	char			*target;
+	int				fd;
+	struct s_redir	*next;
+}	t_redir;
+
+/* t_cmd: 単一コマンド(argv + リダイレクト。パイプは後続で配列化) */
+typedef struct s_cmd
+{
+	char		**argv;
+	t_redir		*redirs;
+}	t_cmd;
+
+/* t_lex: レキサ状態(トークン列構築 + quote 状態 + 語 active フラグ) */
 typedef struct s_lex
 {
-	char	**argv;
-	int		argc;
+	t_tok	*head;
+	t_tok	*tail;
 	t_buf	buf;
 	int		quote;
 	int		active;
@@ -54,13 +88,36 @@ int		process_line(t_shell *shell, char *line);
 void	free_argv(char **argv);
 
 /* lexer.c */
-char	**tokenize(t_shell *shell, const char *line);
+t_tok	*lex_tokens(t_shell *shell, const char *line);
 int		lex_run(t_shell *shell, t_lex *lx, const char *line);
 int		finish_word(t_lex *lx);
-int		argv_push(t_lex *lx, char *word);
+int		tok_push(t_lex *lx, t_tok_type type, char *str);
 
 /* lexer_state.c */
 int		handle_char(t_shell *shell, t_lex *lx, const char *s, int i);
+
+/* lexer_op.c */
+int		is_op(char c);
+int		op_len(const char *s, int i);
+int		op_type(const char *s, int i, int len);
+int		emit_op(t_lex *lx, const char *s, int i);
+
+/* parser.c */
+t_cmd	*parse_tokens(t_shell *shell, t_tok *toks);
+
+/* cmd.c */
+t_cmd	*cmd_new(void);
+int		argv_push_cmd(t_cmd *cmd, char *word);
+void	free_cmd(t_cmd *cmd);
+void	free_redirs(t_redir *r);
+void	free_tok(t_tok *t);
+
+/* redir.c */
+int		apply_redirs(t_redir *r);
+int		restore_fds(int *saved);
+
+/* heredoc.c */
+int		run_heredocs(t_shell *shell, t_cmd *cmd);
 
 /* expand.c */
 int		expand_var(t_shell *shell, t_lex *lx, const char *s, int i);
@@ -90,7 +147,7 @@ int		bi_export(t_shell *shell, char **argv);
 int		bi_unset(t_shell *shell, char **argv);
 
 /* execute.c */
-int		run_external(t_shell *shell, char **argv);
+int		run_external(t_shell *shell, t_cmd *cmd);
 
 /* path_utils.c */
 char	*find_command_path(char **env, const char *cmd);

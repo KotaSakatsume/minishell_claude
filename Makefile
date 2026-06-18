@@ -20,7 +20,8 @@ SRCS        = src/main.c src/repl.c src/process_line.c \
               src/execute.c src/path_utils.c \
               src/env_utils.c src/env_set.c \
               src/builtin_cd.c src/builtin_export.c src/builtin_unset.c \
-              src/strbuf.c src/expand.c src/lexer_state.c src/lexer.c
+              src/strbuf.c src/expand.c src/lexer_state.c src/lexer.c \
+              src/lexer_op.c src/parser.c src/cmd.c src/redir.c src/heredoc.c
 OBJS        = $(SRCS:.c=.o)
 
 all: $(NAME)

@@ -2,33 +2,29 @@
 #include <unistd.h>
 #include "minishell.h"
 
-/* 完成トークンを argv に追加(自前 grow: count+2 で確保し付け替え) */
-int	argv_push(t_lex *lx, char *word)
+/* 完成トークンを末尾に連結。str は所有を移譲(失敗時は free して -1) */
+int	tok_push(t_lex *lx, t_tok_type type, char *str)
 {
-	char	**na;
-	int		i;
+	t_tok	*tok;
 
-	na = (char **)malloc(sizeof(char *) * (lx->argc + 2));
-	if (!na)
+	tok = (t_tok *)malloc(sizeof(t_tok));
+	if (!tok)
 	{
-		free(word);
+		free(str);
 		return (-1);
 	}
-	i = 0;
-	while (i < lx->argc)
-	{
-		na[i] = lx->argv[i];
-		i++;
-	}
-	na[lx->argc] = word;
-	na[lx->argc + 1] = NULL;
-	free(lx->argv);
-	lx->argv = na;
-	lx->argc++;
+	tok->type = type;
+	tok->str = str;
+	tok->next = NULL;
+	if (!lx->head)
+		lx->head = tok;
+	else
+		lx->tail->next = tok;
+	lx->tail = tok;
 	return (0);
 }
 
-/* active な語を確定(buf を release して argv へ移譲し、buf を作り直す) */
+/* active な語を WORD トークンとして確定(unquoted の空語は捨てる) */
 int	finish_word(t_lex *lx)
 {
 	char	*word;
@@ -40,7 +36,7 @@ int	finish_word(t_lex *lx)
 		return (-1);
 	if (!lx->had_quote && word[0] == '\0')
 		free(word);
-	else if (argv_push(lx, word))
+	else if (tok_push(lx, TOK_WORD, word))
 		return (-1);
 	lx->active = 0;
 	lx->had_quote = 0;
@@ -73,29 +69,23 @@ int	lex_run(t_shell *shell, t_lex *lx, const char *line)
 	return (finish_word(lx));
 }
 
-char	**tokenize(t_shell *shell, const char *line)
+t_tok	*lex_tokens(t_shell *shell, const char *line)
 {
 	t_lex	lx;
 
-	lx.argv = (char **)malloc(sizeof(char *));
-	if (!lx.argv)
-		return (NULL);
-	lx.argv[0] = NULL;
-	lx.argc = 0;
+	lx.head = NULL;
+	lx.tail = NULL;
 	lx.quote = 0;
 	lx.active = 0;
 	lx.had_quote = 0;
 	if (sb_init(&lx.buf))
-	{
-		free(lx.argv);
 		return (NULL);
-	}
 	if (lex_run(shell, &lx, line))
 	{
 		free(lx.buf.data);
-		free_argv(lx.argv);
+		free_tok(lx.head);
 		return (NULL);
 	}
 	free(lx.buf.data);
-	return (lx.argv);
+	return (lx.head);
 }
