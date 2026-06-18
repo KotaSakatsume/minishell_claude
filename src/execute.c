@@ -14,18 +14,13 @@ static void	cmd_error(const char *cmd, const char *msg)
 }
 
 /*
-** 子プロセス: リダイレクト適用 → execve。失敗時は errno で 126/127 を判定し
-** path を free して exit(親側 cmd は親が解放)。
+** 子プロセスで execve(リダイレクトは呼び出し側で適用済み)。失敗時は errno で
+** 126/127 を判定し path を free して exit。単一コマンド/パイプ子で共有。
 */
-static void	child_exec(t_shell *shell, t_cmd *cmd, char *path)
+void	exec_external(t_shell *shell, t_cmd *cmd, char *path)
 {
 	int	err;
 
-	if (apply_redirs(cmd->redirs))
-	{
-		free(path);
-		exit(1);
-	}
 	execve(path, cmd->argv, shell->env);
 	err = errno;
 	free(path);
@@ -38,13 +33,24 @@ static void	child_exec(t_shell *shell, t_cmd *cmd, char *path)
 	exit(126);
 }
 
-static int	wait_status(int status)
+int	wait_status(int status)
 {
 	if (WIFEXITED(status))
 		return (WEXITSTATUS(status));
 	if (WIFSIGNALED(status))
 		return (128 + WTERMSIG(status));
 	return (0);
+}
+
+/* 単一外部コマンドの子: リダイレクト適用 → execve */
+static void	child_run_external(t_shell *shell, t_cmd *cmd, char *path)
+{
+	if (apply_redirs(cmd->redirs))
+	{
+		free(path);
+		exit(1);
+	}
+	exec_external(shell, cmd, path);
 }
 
 int	run_external(t_shell *shell, t_cmd *cmd)
@@ -69,7 +75,7 @@ int	run_external(t_shell *shell, t_cmd *cmd)
 		return (1);
 	}
 	if (pid == 0)
-		child_exec(shell, cmd, path);
+		child_run_external(shell, cmd, path);
 	waitpid(pid, &status, 0);
 	free(path);
 	shell->last_status = wait_status(status);

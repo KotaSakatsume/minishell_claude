@@ -1,14 +1,16 @@
 #include "minishell.h"
 
-/* クォート外のリダイレクト演算子起点文字か */
+/* クォート外の演算子起点文字か(リダイレクト + パイプ) */
 int	is_op(char c)
 {
-	return (c == '<' || c == '>');
+	return (c == '<' || c == '>' || c == '|');
 }
 
-/* `>>` / `<<` は2文字、`>` / `<` は1文字 */
+/* `>>` / `<<` は2文字、`>` `<` `|` は1文字(`||` は1文字ずつ) */
 int	op_len(const char *s, int i)
 {
+	if (s[i] == '|')
+		return (1);
 	if (s[i + 1] == s[i])
 		return (2);
 	return (1);
@@ -16,6 +18,8 @@ int	op_len(const char *s, int i)
 
 int	op_type(const char *s, int i, int len)
 {
+	if (s[i] == '|')
+		return (TOK_PIPE);
 	if (s[i] == '<')
 	{
 		if (len == 2)

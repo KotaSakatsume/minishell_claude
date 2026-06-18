@@ -63,7 +63,10 @@ int	process_line(t_shell *shell, char *line)
 	free_tok(toks);
 	if (!cmd)
 		return (0);
-	exec_cmd(shell, cmd);
+	if (cmd->next)
+		exec_pipeline(shell, cmd);
+	else
+		exec_cmd(shell, cmd);
 	free_cmd(cmd);
 	return (0);
 }

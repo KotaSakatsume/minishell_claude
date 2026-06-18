@@ -17,6 +17,7 @@ t_cmd	*cmd_new(void)
 	}
 	cmd->argv[0] = NULL;
 	cmd->redirs = NULL;
+	cmd->next = NULL;
 	return (cmd);
 }
 
@@ -64,13 +65,19 @@ void	free_redirs(t_redir *r)
 	}
 }
 
+/* パイプライン全体(next 連結リスト)を解放 */
 void	free_cmd(t_cmd *cmd)
 {
-	if (!cmd)
-		return ;
-	free_argv(cmd->argv);
-	free_redirs(cmd->redirs);
-	free(cmd);
+	t_cmd	*next;
+
+	while (cmd)
+	{
+		next = cmd->next;
+		free_argv(cmd->argv);
+		free_redirs(cmd->redirs);
+		free(cmd);
+		cmd = next;
+	}
 }
 
 void	free_tok(t_tok *t)
