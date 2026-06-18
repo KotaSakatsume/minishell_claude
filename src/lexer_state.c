@@ -37,6 +37,8 @@ static int	handle_none(t_shell *shell, t_lex *lx, const char *s, int i)
 			return (-1);
 		return (i + 1);
 	}
+	if (is_op(s[i]))
+		return (emit_op(lx, s, i));
 	lx->active = 1;
 	if (s[i] == '\'' || s[i] == '"')
 	{

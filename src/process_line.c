@@ -1,32 +1,69 @@
+#include <unistd.h>
 #include "minishell.h"
 
-/*
-** builtin / external の分岐。builtin は親プロセスで実行する
-** (exit が親を終了させ、将来の cd を親に効かせるため fork しない)。
-*/
-static int	dispatch(t_shell *shell, char **argv)
+/* リダイレクトのみ(argv 空)。ファイル作成/truncate だけ行い exec しない */
+static int	exec_redir_only(t_shell *shell, t_cmd *cmd)
 {
-	if (is_builtin(argv[0]))
-		return (run_builtin(shell, argv));
-	return (run_external(shell, argv));
+	int	saved[2];
+	int	r;
+
+	saved[0] = dup(STDIN_FILENO);
+	saved[1] = dup(STDOUT_FILENO);
+	r = apply_redirs(cmd->redirs);
+	restore_fds(saved);
+	if (r != 0)
+		shell->last_status = 1;
+	else
+		shell->last_status = 0;
+	return (0);
+}
+
+/* ビルトイン: 親で標準fdを退避 → リダイレクト適用 → 実行 → 復元 */
+static int	exec_builtin_redir(t_shell *shell, t_cmd *cmd)
+{
+	int	saved[2];
+
+	saved[0] = dup(STDIN_FILENO);
+	saved[1] = dup(STDOUT_FILENO);
+	if (apply_redirs(cmd->redirs))
+	{
+		shell->last_status = 1;
+		restore_fds(saved);
+		return (1);
+	}
+	run_builtin(shell, cmd->argv);
+	restore_fds(saved);
+	return (0);
+}
+
+static int	exec_cmd(t_shell *shell, t_cmd *cmd)
+{
+	if (run_heredocs(shell, cmd))
+		return (1);
+	if (!cmd->argv[0])
+		return (exec_redir_only(shell, cmd));
+	if (is_builtin(cmd->argv[0]))
+		return (exec_builtin_redir(shell, cmd));
+	return (run_external(shell, cmd));
 }
 
 /*
-** 将来のレキサ/パーサ/実行の接続点。
-** 現状は「空白split -> dispatch -> argv 解放」。クォート/展開/リダイレクト/
-** パイプは別Issue。argv の所有権は本関数が持ち、末尾で必ず解放する。
+** レキサ → パーサ → 実行 → 解放。空行/未閉じクォート/構文エラーは
+** lex_tokens/parse_tokens が NULL を返し no-op(status は内部で設定)。
 */
 int	process_line(t_shell *shell, char *line)
 {
-	char	**argv;
+	t_tok	*toks;
+	t_cmd	*cmd;
 
-	argv = tokenize(shell, line);
-	if (!argv || !argv[0])
-	{
-		free_argv(argv);
+	toks = lex_tokens(shell, line);
+	if (!toks)
 		return (0);
-	}
-	dispatch(shell, argv);
-	free_argv(argv);
+	cmd = parse_tokens(shell, toks);
+	free_tok(toks);
+	if (!cmd)
+		return (0);
+	exec_cmd(shell, cmd);
+	free_cmd(cmd);
 	return (0);
 }
