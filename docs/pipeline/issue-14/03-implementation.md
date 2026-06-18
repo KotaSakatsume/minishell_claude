@@ -54,4 +54,4 @@
 
 ## ブランチ / コミット
 - ブランチ: `feat/issue-14-signals`
-- コミットハッシュ: (コミット後に追記)
+- コミットハッシュ: `fa3c699` — "feat: signals (ctrl-C / ctrl-D / ctrl-\\) with single global"
