@@ -66,4 +66,4 @@
 
 ## ブランチ / コミット
 - ブランチ: `feat/issue-12-pipe`
-- コミットハッシュ: (コミット後に追記)
+- コミットハッシュ: `3f07f73` — "feat: pipe | (multi-command pipe/fork pipeline)"
