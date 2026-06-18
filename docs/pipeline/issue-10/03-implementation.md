@@ -63,4 +63,4 @@
 
 ## ブランチ / コミット
 - ブランチ: `feat/issue-10-redirect`
-- コミットハッシュ: (コミット後に追記)
+- コミットハッシュ: `003b532` — "feat: redirections < > >> << (heredoc) with command struct"
