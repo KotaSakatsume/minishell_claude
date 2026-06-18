@@ -36,7 +36,8 @@ typedef enum e_tok_type
 	TOK_IN,
 	TOK_OUT,
 	TOK_APPEND,
-	TOK_HEREDOC
+	TOK_HEREDOC,
+	TOK_PIPE
 }	t_tok_type;
 
 /* t_tok: レキサ出力の型付きトークン連結リスト */
@@ -56,11 +57,12 @@ typedef struct s_redir
 	struct s_redir	*next;
 }	t_redir;
 
-/* t_cmd: 単一コマンド(argv + リダイレクト。パイプは後続で配列化) */
+/* t_cmd: コマンド(argv + リダイレクト)。next で `|` パイプライン連結 */
 typedef struct s_cmd
 {
-	char		**argv;
-	t_redir		*redirs;
+	char			**argv;
+	t_redir			*redirs;
+	struct s_cmd	*next;
 }	t_cmd;
 
 /* t_lex: レキサ状態(トークン列構築 + quote 状態 + 語 active フラグ) */
@@ -104,6 +106,16 @@ int		emit_op(t_lex *lx, const char *s, int i);
 
 /* parser.c */
 t_cmd	*parse_tokens(t_shell *shell, t_tok *toks);
+int		parse_error(t_shell *shell);
+
+/* parser_pipe.c */
+int		p_pipe(t_shell *shell, t_cmd **pcur, t_tok **ptoks);
+
+/* pipeline.c */
+int		exec_pipeline(t_shell *shell, t_cmd *head);
+
+/* pipeline_child.c */
+void	pipe_child(t_shell *shell, t_cmd *cmd, int in_fd, int *pfd);
 
 /* cmd.c */
 t_cmd	*cmd_new(void);
@@ -148,6 +160,8 @@ int		bi_unset(t_shell *shell, char **argv);
 
 /* execute.c */
 int		run_external(t_shell *shell, t_cmd *cmd);
+void	exec_external(t_shell *shell, t_cmd *cmd, char *path);
+int		wait_status(int status);
 
 /* path_utils.c */
 char	*find_command_path(char **env, const char *cmd);
