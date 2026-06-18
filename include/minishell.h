@@ -4,9 +4,17 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <unistd.h>
+# include <signal.h>
 # include <readline/readline.h>
 # include <readline/history.h>
 # include "libft.h"
+
+/*
+** g_signal: 唯一許可されるグローバル変数。直近に受信したシグナル番号のみを
+** 保持する(t_shell/last_status へのアクセスは持たせない=42 規約)。
+** 定義は src/signals.c。
+*/
+extern sig_atomic_t	g_signal;
 
 /*
 ** t_shell: シェル全体の状態。main で1つ確保し全関数へポインタ渡しする。
@@ -82,6 +90,11 @@ void	shell_cleanup(t_shell *shell);
 
 /* repl.c */
 int		repl_loop(t_shell *shell);
+
+/* signals.c */
+void	set_signals_interactive(void);
+void	set_signals_exec_parent(void);
+void	reset_signals_child(void);
 
 /* process_line.c (将来のレキサ/実行の接続点) */
 int		process_line(t_shell *shell, char *line);

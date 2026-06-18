@@ -45,6 +45,7 @@ int	wait_status(int status)
 /* 単一外部コマンドの子: リダイレクト適用 → execve */
 static void	child_run_external(t_shell *shell, t_cmd *cmd, char *path)
 {
+	reset_signals_child();
 	if (apply_redirs(cmd->redirs))
 	{
 		free(path);

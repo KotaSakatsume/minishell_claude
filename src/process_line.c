@@ -63,6 +63,7 @@ int	process_line(t_shell *shell, char *line)
 	free_tok(toks);
 	if (!cmd)
 		return (0);
+	set_signals_exec_parent();
 	if (cmd->next)
 		exec_pipeline(shell, cmd);
 	else
